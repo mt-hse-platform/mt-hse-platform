@@ -82,6 +82,12 @@ jobs:
       - name: Notification constraints test (SQL)
         run: psql -v ON_ERROR_STOP=1 -f db/tests/notifications_constraints.sql
 
+      - name: Apply migration 0008 (text question ids)
+        run: psql -v ON_ERROR_STOP=1 -f db/migrations/0008_text_question_ids.sql
+
+      - name: Question id constraints test (SQL)
+        run: psql -v ON_ERROR_STOP=1 -f db/tests/question_ids_constraints.sql
+
       - name: Bootstrap two organizations (tests the onboarding script on real PostgreSQL)
         run: |
           node scripts/bootstrap-org.ts --org "Org A" --email a@example.com --name "Admin A" --uid CI_ORG_A_ADMIN_UID_0000001 | psql -v ON_ERROR_STOP=1
