@@ -1,0 +1,13 @@
+{
+  "name": "mt-hse-platform",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test \"packages/**/*.test.ts\" \"apps/*/src/**/*.test.ts\" \"scripts/**/*.test.ts\"",
+    "test:integration": "node --test \"apps/*/src/**/*.itest.ts\""
+  }
+}

@@ -1,0 +1,23 @@
+# Local development database. The API and Caddy services are added in the stages that create them.
+# STATUS: not yet executed in the authoring sandbox (no Docker there).
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_postgres_password_change_me}
+      POSTGRES_DB: mthse
+    ports:
+      - "127.0.0.1:5432:5432"   # local only, never exposed publicly
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/migrations/0001_identity.sql:/docker-entrypoint-initdb.d/01_identity.sql:ro
+      - ./db/migrations/0002_issues_actions.sql:/docker-entrypoint-initdb.d/02_issues_actions.sql:ro
+      - ./db/migrations/0003_templates.sql:/docker-entrypoint-initdb.d/03_templates.sql:ro
+      - ./db/migrations/0004_inspections.sql:/docker-entrypoint-initdb.d/04_inspections.sql:ro
+      - ./db/migrations/0005_invitations.sql:/docker-entrypoint-initdb.d/05_invitations.sql:ro
+      - ./db/migrations/0006_media.sql:/docker-entrypoint-initdb.d/06_media.sql:ro
+      - ./db/migrations/0007_notifications.sql:/docker-entrypoint-initdb.d/07_notifications.sql:ro
+      - ./db/dev/02_app_user_login.sql:/docker-entrypoint-initdb.d/08_app_user_login.sql:ro
+volumes:
+  pgdata:

@@ -1,0 +1,84 @@
+# Production stack: PostgreSQL + migrations + API (with Chromium for PDF) + Caddy (HTTPS + the web app).
+# Usage:  cp .env.production.example .env.production  (edit it)   then   ./ops/deploy.sh
+# (the scripts run: docker compose --env-file .env.production -f docker-compose.prod.yml ...)
+name: mthse
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mthse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+    command: ["postgres", "-c", "shared_buffers=512MB", "-c", "effective_cache_size=2GB", "-c", "work_mem=8MB", "-c", "max_connections=60"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mthse"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # no published ports: the database is reachable only from the other containers
+
+  migrate:
+    image: postgres:16
+    restart: "no"
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGDATABASE: mthse
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.production}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env.production}
+    entrypoint: ["sh", "/migrate.sh"]
+    volumes:
+      - ./db/migrations:/migrations:ro
+      - ./ops/migrate.sh:/migrate.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://app_user:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env.production}@postgres:5432/mthse
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?set FIREBASE_PROJECT_ID in .env.production}
+      PDF_ENABLED: "1"
+      PORT: "3000"
+    mem_limit: 3g
+    volumes:
+      - media:/data/media
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env.production}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
