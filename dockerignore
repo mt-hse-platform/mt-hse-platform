@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+**/node_modules
+backups
+.env*
+**/*.test.ts
+**/*.itest.ts
+docs
+db
+dist
