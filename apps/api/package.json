@@ -1,0 +1,13 @@
+{
+  "name": "@mt-hse/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.ts"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "pg": "^8.13.0",
+    "playwright-core": "^1.50.0"
+  }
+}
