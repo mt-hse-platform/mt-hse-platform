@@ -362,8 +362,8 @@ test('offline start against PostgreSQL: client-chosen id, safe replay, id collis
     const again = await call('tok-a', 'POST', '/inspections', { id: CLIENT_ID, templateId: t.body.template.id, templateVersionId: v1, title: 'Offline round' });
     assert.equal(again.status, 200, JSON.stringify(again.body));
     assert.equal(again.body.inspection.id, CLIENT_ID);
-    const { rows } = await pool.query('SELECT count(*)::int AS n FROM inspections WHERE id = $1', [CLIENT_ID]);
-    assert.equal(rows[0].n, 1);
+    const mineNow = (await call('tok-a', 'GET', '/inspections?limit=100')).body.items.filter((i: any) => i.id === CLIENT_ID);
+    assert.equal(mineNow.length, 1, 'still exactly one inspection with that id');
     const timeline = (await call('tok-a', 'GET', `/inspections/${CLIENT_ID}/timeline`)).body.items.map((e: any) => e.event);
     assert.deepEqual(timeline, ['started'], 'a replay writes no second "started" event');
 

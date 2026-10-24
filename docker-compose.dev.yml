@@ -18,6 +18,7 @@ services:
       - ./db/migrations/0005_invitations.sql:/docker-entrypoint-initdb.d/05_invitations.sql:ro
       - ./db/migrations/0006_media.sql:/docker-entrypoint-initdb.d/06_media.sql:ro
       - ./db/migrations/0007_notifications.sql:/docker-entrypoint-initdb.d/07_notifications.sql:ro
+      - ./db/migrations/0008_text_question_ids.sql:/docker-entrypoint-initdb.d/08_text_question_ids.sql:ro
       - ./db/dev/02_app_user_login.sql:/docker-entrypoint-initdb.d/08_app_user_login.sql:ro
 volumes:
   pgdata:

@@ -14,5 +14,5 @@
     "types": ["vite/client"]
   },
   "include": ["src", "../../packages", "../../config"],
-  "exclude": ["**/*.test.ts", "**/*.itest.ts"]
+  "exclude": ["**/*.test.ts", "**/*.itest.ts", "../../packages/**/*.test.ts", "../../config/**/*.test.ts"]
 }
